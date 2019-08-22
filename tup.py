@@ -258,7 +258,7 @@ def parse_args(argv):
         print("\nThis file is a json config file with two fields indicating the URL of the tuleap server and an API access key to use")
         print("\nExample :\n")
         print("{")
-        print("    \"tuleap_url\" : \"https://mytuleapserver.com",")
+        print("    \"tuleap_url\" : \"https://mytuleapserver.com")
         print("    \"tuleap_key\" : \"REMOVED_create_your_own_key_in_your_profile_in_the_web_interface_and_copy_it_here\"")
         print("}")
         exit(1)
