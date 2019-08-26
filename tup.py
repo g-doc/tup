@@ -17,10 +17,9 @@ def send_request( url, authKey ):
     """
     try:
         headers = {'Accept' : 'application/json', 'X-Auth-AccessKey' :authKey }
-        with requests.get(url, headers=headers) as r:
-            r = requests.get(url, headers=headers) 
-            r.raise_for_status()
-            return json.loads(r.text)
+        r = requests.get(url, headers=headers) 
+        r.raise_for_status()
+        return json.loads(r.text)
     except: 
         raise Exception("Request failed : {} {}".format(r.status_code, json.loads(r.text)['error']['message']))
 
