@@ -20,8 +20,8 @@ def send_request( url, authKey ):
         r = requests.get(url, headers=headers) 
         r.raise_for_status()
         return json.loads(r.text)
-    except: 
-        raise Exception("Request failed : {} {}".format(r.status_code, json.loads(r.text)['error']['message']))
+    except Exception as e: 
+        raise Exception("send_request failed : \n\t- {} \n\t- {}".format(type(e), e))
 
 def send_request_no_check( url, authKey ):
     """Send a request that could fail
@@ -252,7 +252,7 @@ def parse_args(argv):
             access_key = config['tuleap_key']
             tuleap_url = config['tuleap_url']
     except Exception as e:
-        print("[ERROR] Cannot load tuleap URL and access key")
+        print("[ERROR] Cannot load tuleap URL and access key :  \n\t- {} \n\t- {}".format(type(e), e))
         print("\nYou must pass a config file as parameter or have a config file named \".tuleap_config\" in your home directory ({}/.tuleap_config)".format(os.path.expanduser("~")))
         print("\nThis file is a json config file with two fields indicating the URL of the tuleap server and an API access key to use")
         print("\nExample :\n")
@@ -307,11 +307,11 @@ def main(argv):
 
     try:
         command_list[command](parameters)
-    except KeyError as e:
-        print("\n[ERROR] Invalid command : {}\n".format(e))
+    except KeyError as e:        
+        print("\n[ERROR] Invalid command : \n\t- {} \n\t- {}".format(type(e), e))
         tup_help([command])
     except Exception as e:
-        print("\n[ERROR] {}\n\nUsage: ".format(e))
+        print("\n[ERROR]\n\t- {} \n\t- {}\nUsage: ".format(type(e), e))
         tup_help([command])
     
     
