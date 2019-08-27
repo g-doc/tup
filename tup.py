@@ -116,10 +116,30 @@ def tup_find_package(package_name_or_id):
     raise Exception("Invalid package name or ID")
 
 
+def tup_get_release_list(package_name_or_id):
+    (package_name, package_id) = tup_find_package(package_name_or_id)
+    r = send_request_no_check(tuleap_url + '/api/frs_packages/' + str(package_id) + '/frs_release', access_key )
+    if (r.status_code == 200):
+        release_collection = json.loads(r.text)
+        releases_list = release_collection['collection']
+    else:
+        releases_list = []    
+
+    return (releases_list, package_name, package_id)
+
 def tup_list_releases(args):
     if (len(args) != 1):
         raise Exception("tup_list_releases: must have 1 parameter")   
-    (package_name, package_id) = tup_find_package(args[0])
+    (releases_list, package_name, package_id) = tup_get_release_list(args[0])
+    print("\nThere are {} releases available in package {} ({})\n".format(len(releases_list), package_name, package_id ))
+    for release in releases_list:
+        print("- {} ({})".format(release['name'], release['id'] ))
+        for file in release['files']:
+            print("\t{} ({})".format(file['name'], file['id']))         
+        print("")
+
+def tup_get_latest_release(package):
+    (package_name, package_id) = tup_find_package(package)
     r = send_request_no_check(tuleap_url + '/api/frs_packages/' + str(package_id) + '/frs_release', access_key )
     if (r.status_code == 200):
         release_collection = json.loads(r.text)
@@ -129,12 +149,12 @@ def tup_list_releases(args):
         nb_releases = 0
         releases_list = []
     
-    print("\nThere are {} releases available in package {} ({})\n".format(nb_releases, package_name, package_id ))
+    latest_release_id = 0
     for release in releases_list:
-        print("- {} ({})".format(release['name'], release['id'] ))
-        for file in release['files']:
-            print("\t{} ({})".format(file['name'], file['id']))         
-        print("")
+        if ( release['id'] > latest_release_id):
+            latest_release_id = release['id']
+    
+    return (latest_release_id)
 
 def tup_search(args):
     if (len(args) == 0):
@@ -179,6 +199,16 @@ def tup_download(args):
             with zipfile.ZipFile(target + '/' + file['name'], 'r') as zip:
                 zip.extractall(target)
                 os.remove(target + '/' + file['name'])
+
+def tup_download_latest(args):
+    if (len(args) != 2):
+        raise Exception("tup_download_latest: must have 2 parameters: release_id + path")
+    package_id = args[0]
+    target = args[1]
+    print("Searching for and downloading the latest release in package {} to {}".format(package_id, target))
+    release_id = tup_get_latest_release(package_id)
+    tup_download([release_id, target])
+
 
 def tup_upload_release(args):
     if (len(args) != 5):
@@ -276,6 +306,7 @@ command_list = {
     'list-projects' : tup_list_projects, 
     'list-packages' : tup_list_package,
     'list-releases' : tup_list_releases,
+    'get-latest'    : tup_download_latest,
     'get' : tup_download,
     'put' : tup_upload_release,
     'search' : tup_search,
@@ -286,6 +317,7 @@ command_usage = {
     'list-projects'         : "", 
     'list-packages'         : "[project_name_or_id]",
     'list-releases'         : "[package_name_or_id]",
+    'get-latest'            : "[package_name_or_id] path",
     'get'                   : "release_id path",
     'put'                   : "package_id release_name zip_file release_note changelog",
     'search'                : "[keyword]"
@@ -296,6 +328,7 @@ command_descriptions = {
     'list-projects'     : "List all projects to which the user has access", 
     'list-packages'     : "List packages to which the user has access", 
     'list-releases'     : "List releases to which the user has access",
+    'get-latest'        : "Download the most recent release in a given package",
     'get'               : "Download a given release.",
     'put'               : "Create a new release in a given package",
     'search'            : "Search projects, packages and files for given keyword"

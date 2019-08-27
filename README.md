@@ -59,8 +59,12 @@ The available commands are :
         Usage:
         tup.py get release_id path
 
+7. **get-latest** : download the latest release in a given package
 
-7. **put** : create a new release in a given package. The release name, a zip file containing the release, the release note and a changelog must be provided.
+        Usage:
+        tup.py get package_name_or_id path
+
+8. **put** : create a new release in a given package. The release name, a zip file containing the release, the release note and a changelog must be provided.
 
         Usage :
         tup.py put package_id release_name zip_file release_note changelog
